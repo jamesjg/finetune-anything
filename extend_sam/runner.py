@@ -71,7 +71,7 @@ class SemRunner(BaseRunner):
             if (iteration + 1) % cfg.log_iter == 0:
                 write_log(iteration=iteration, log_path=log_path, log_data=train_meter.get(clear=True),
                           status=self.exist_status[0],
-                          writer=writer, timer=self.train_timer)
+                          writer=writer, timer=self.train_timer, lr=self.optimizer.param_groups[0]['lr'])
             # eval
             if (iteration + 1) % cfg.eval_iter == 0:
                 mIoU, _ = self._eval()
@@ -105,7 +105,7 @@ class SemRunner(BaseRunner):
                     pred_mask = get_numpy_from_tensor(predictions[batch_index])
                     gt_mask = get_numpy_from_tensor(labels[batch_index].squeeze(0))
                     h, w = pred_mask.shape
-                    gt_mask = cv2.resize(gt_mask, (w, h), interpolation=cv2.INTER_NEAREST)
+                    gt_mask = cv2.resize(gt_mask, (w, h), interpolation=cv2.INTER_NEAREST) #compute metrics in [256, 256]
 
                     eval_metric.add(pred_mask, gt_mask)
         self.model.train()
@@ -123,6 +123,6 @@ class SemRunner(BaseRunner):
             if loss_cfg[item[0]].label_one_hot:
                 class_num = cfg.model.params.class_num
                 real_labels = one_hot_embedding_3d(real_labels, class_num=class_num)
-            tmp_loss = item[1](mask_pred, real_labels)
+            tmp_loss = item[1](mask_pred, real_labels) #[b, c, H, W] and [b, H, W]
             loss_dict[item[0]] = tmp_loss.item()
             total_loss += loss_cfg[item[0]].weight * tmp_loss

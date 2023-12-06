@@ -186,17 +186,21 @@ class SemSegHead(nn.Module):
 
         # Upscale mask embeddings and predict masks using the mask tokens
         src = src.transpose(1, 2).view(b, c, h, w)
-        upscaled_embedding = self.output_upscaling(src)
+        upscaled_embedding = self.output_upscaling(src)  # transpose to [b, 32, 256 256]
         hyper_in_list: List[torch.Tensor] = []
+
+        # maks_tokens_out:[b, 4, 256], choose the mask_scale-th mask token to mlp
+        # use class_num hypernetworks to mask_token
         for i in range(self.class_num):
-            hyper_in_list.append(self.output_hypernetworks_mlps[i](mask_tokens_out[:, mask_scale, :]))
-        hyper_in = torch.stack(hyper_in_list, dim=1)
+            hyper_in_list.append(self.output_hypernetworks_mlps[i](mask_tokens_out[:, mask_scale, :])) #  [b, 256] -> 104 * [b, 32], 104 mlps have same input
+        hyper_in = torch.stack(hyper_in_list, dim=1) #[b, 104, 32]
 
         b, c, h, w = upscaled_embedding.shape
+        # [b, 104, 32] @ [b, 32, 256* 256] -> [b, 104, 256*256] -> [b, 104, 256, 256]
         masks = (hyper_in @ upscaled_embedding.view(b, c, h * w)).view(b, -1, h, w)  # B N H W, N is num of category
 
         # Generate mask quality predictions
-        iou_pred = self.iou_prediction_head(iou_token_out)  # B N H W, N is num of category
+        iou_pred = self.iou_prediction_head(iou_token_out)  #[b, 256] -> [b, 4]
 
         return masks, iou_pred
 

@@ -51,6 +51,7 @@ class BaseSemanticDataset(VisionDataset):
             img_folder_name=self.img_path, ann_folder_name=self.ann_path))
         self.img_names = [img_name.split(img_suffix)[0] for img_name in os.listdir(self.img_path) if
                           img_name.endswith(img_suffix)]
+        print('img_nums: {img_nums}'.format(img_nums=len(self.img_names)))
         self.img_suffix = img_suffix
         self.ann_suffix = ann_suffix
         self.return_dict = return_dict

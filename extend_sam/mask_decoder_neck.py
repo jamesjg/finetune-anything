@@ -82,18 +82,19 @@ class MaskDecoderNeck(nn.Module):
           torch.Tensor: Tokens of mask prediction
         """
         # Concatenate output tokens
-        output_tokens = torch.cat([self.iou_token.weight, self.mask_tokens.weight], dim=0)
-        output_tokens = output_tokens.unsqueeze(0).expand(sparse_prompt_embeddings.size(0), -1, -1)
-        tokens = torch.cat((output_tokens, sparse_prompt_embeddings), dim=1)
+        output_tokens = torch.cat([self.iou_token.weight, self.mask_tokens.weight], dim=0) #[1,256] cat [4,256] -> [5,256]
+        output_tokens = output_tokens.unsqueeze(0).expand(sparse_prompt_embeddings.size(0), -1, -1) # [1, 5, 256]
+        tokens = torch.cat((output_tokens, sparse_prompt_embeddings), dim=1) # [1, 5 + 0, 256], sparse_prompt_embeddings is []
 
         # Expand per-image data in batch direction to be per-mask
-        src = torch.repeat_interleave(image_embeddings, tokens.shape[0], dim=0)
-        src = src + dense_prompt_embeddings
-        pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0)
+        src = torch.repeat_interleave(image_embeddings, tokens.shape[0], dim=0) # repeat image_embeddings in dim0, [b,256,64,64] -> [b,256,64,64]
+        src = src + dense_prompt_embeddings #[b,256,64,64] + [1,256,64,64] -> [b,256,64,64]
+        pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0) #[1, 256, 64, 64]
         src_shape = src.shape
         # Run the transformer
-        hs, src = self.transformer(src, pos_src, tokens)
-        iou_token_out = hs[:, 0, :]
-        mask_tokens_out = hs[:, 1: (1 + self.num_mask_tokens), :]
+        # src and tokens to transformer, src out is  src and tokens out is hs
+        hs, src = self.transformer(src, pos_src, tokens) #hs: [b, 5, 256], src: [b, 64 * 64, 256]
+        iou_token_out = hs[:, 0, :] # [b, 256]
+        mask_tokens_out = hs[:, 1: (1 + self.num_mask_tokens), :] # [b, 4, 256]
 
         return src, iou_token_out, mask_tokens_out, src_shape

@@ -127,9 +127,9 @@ class mIoUOnline:
         correct_mask = (pred_mask == gt_mask) * obj_mask
 
         for i in range(self.class_num):
-            self.P[i] += np.sum((pred_mask == i) * obj_mask)
-            self.T[i] += np.sum((gt_mask == i) * obj_mask)
-            self.TP[i] += np.sum((gt_mask == i) * correct_mask)
+            self.P[i] += np.sum((pred_mask == i) * obj_mask) # how many pixels pred the class i
+            self.T[i] += np.sum((gt_mask == i) * obj_mask) # how many pixels gt the class i
+            self.TP[i] += np.sum((gt_mask == i) * correct_mask) # how many pixels pred and gt the class i
 
     def get(self, detail=False, clear=True):
         IoU_dic = {}
@@ -188,7 +188,7 @@ def save_model(model, model_path, parallel=False, is_final=False):
         torch.save(model.state_dict(), model_path)
 
 
-def write_log(iteration, log_path, log_data, status, writer, timer):
+def write_log(iteration, log_path, log_data, status, writer, timer, lr=None):
     log_data['iteration'] = iteration
     log_data['time'] = timer.end(clear=True)
     message = "iteration : {val}, ".format(val=log_data['iteration'])
@@ -196,6 +196,8 @@ def write_log(iteration, log_path, log_data, status, writer, timer):
         if key == 'iteration':
             continue
         message += "{key} : {val}, ".format(key=key, val=value)
+    if lr is not None:
+        message += "lr : {lr}, ".format(lr=lr)
     message = message[:-2]  # + '\n'
     print_and_save_log(message, log_path)
     # visualize

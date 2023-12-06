@@ -56,7 +56,7 @@ class SemMaskDecoderAdapter(BaseMaskDecoderAdapter):
     def forward(self, image_embeddings, prompt_adapter, sparse_embeddings, dense_embeddings, multimask_output=True,
                 scale=1):
         src, iou_token_out, mask_tokens_out, src_shape = self.decoder_neck(image_embeddings=image_embeddings,
-                                                                           image_pe=prompt_adapter.sam_prompt_encoder.get_dense_pe(),
+                                                                           image_pe=prompt_adapter.sam_prompt_encoder.get_dense_pe(), # [1,256,64,64]
                                                                            sparse_prompt_embeddings=sparse_embeddings,
                                                                            dense_prompt_embeddings=dense_embeddings,
                                                                            multimask_output=multimask_output, )

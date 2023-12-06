@@ -2,7 +2,7 @@ import torchvision.transforms as T
 from omegaconf.dictconfig import DictConfig
 import torch.nn as nn
 
-AVIAL_TRANSFORM = {'resize': T.Resize, 'to_tensor': T.ToTensor}
+AVIAL_TRANSFORM = {'resize': T.Resize, 'to_tensor': T.ToTensor, 'normalize': T.Normalize, 'random_crop': T.RandomCrop}
 
 
 def get_transforms(transforms: DictConfig):

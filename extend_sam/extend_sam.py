@@ -19,11 +19,12 @@ class BaseExtendSam(nn.Module):
         self.mask_adapter = BaseMaskDecoderAdapter(self.ori_sam, fix=fix_mask_de)
 
     def forward(self, img):
-        x = self.img_adapter(img)
+        x = self.img_adapter(img) #[b,256,64,64]
         points = None
         boxes = None
         masks = None
 
+        #no prompt, only a no-mask embedding = dense_embeddings [1,256,1,1], sparse_embeddings is []
         sparse_embeddings, dense_embeddings = self.prompt_adapter(
             points=points,
             boxes=boxes,

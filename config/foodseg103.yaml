@@ -1,0 +1,110 @@
+train:
+  experiment_name: 'foodseg103_adam_lr_1e-3_vit_b_bs4*2_50000iter'
+
+  # Model
+  model:
+    sam_name: 'sem_sam'
+    params:
+      # Fix the a part of parameters in SAM
+      fix_img_en: True
+      fix_prompt_en: True
+      fix_mask_de: False
+      ckpt_path: 'sam_ckpt/vit_b'
+      class_num: 104 
+      model_type: 'vit_b'    # type should be in [vit_h, vit_b, vit_l, default] vit-h:37s/iter, vit-b: 10s/iter 
+
+  # Dataset
+  dataset:
+    name: 'base_sem'
+    params:
+      dataset_dir: 'data/foodseg103'
+      data_prefix: 
+        img_path: 'img_dir'
+        ann_path: 'ann_dir'
+      image_set: 'train'
+      metainfo: 
+        class_names: ['candy', 'egg tart', 'french fries', 'chocolate', 'biscuit', 'popcorn', 'pudding', 'ice cream', 'cheese butter', 'cake', 'wine', 'milkshake', 'coffee', 'juice', 'milk', 'tea', 'almond', 'red beans', 'cashew', 'dried cranberries', 'soy', 'walnut', 'peanut', 'egg', 'apple', 'date', 'apricot', 'avocado', 'banana', 'strawberry', 'cherry', 'blueberry', 'raspberry', 'mango', 'olives', 'peach', 'lemon', 'pear', 'fig', 'pineapple', 'grape', 'kiwi', 'melon', 'orange', 'watermelon', 'steak', 'pork', 'chicken duck', 'sausage', 'fried meat', 'lamb', 'sauce', 'crab', 'fish', 'shellfish', 'shrimp', 'soup', 'bread', 'corn', 'hamburg', 'pizza', 'hanamaki baozi', 'wonton dumplings', 'pasta', 'noodles', 'rice', 'pie', 'tofu', 'eggplant', 'potato', 'garlic', 'cauliflower', 'tomato', 'kelp', 'seaweed', 'spring onion', 'rape', 'ginger', 'okra', 'lettuce', 'pumpkin', 'cucumber', 'white radish', 'carrot', 'asparagus', 'bamboo shoots', 'broccoli', 'celery stick', 'cilantro mint', 'snow peas', 'cabbage', 'bean sprouts', 'onion', 'pepper', 'green beans', 'French beans', 'king oyster mushroom', 'shiitake', 'enoki mushroom', 'oyster mushroom', 'white button mushroom', 'salad', 'other ingredient']
+    transforms:
+      resize:
+        params:
+          size: [1024, 1024]
+      to_tensor:
+        params: ~
+      normalize:
+        params:
+          mean: [0.485, 0.456, 0.406]
+          std: [0.229, 0.224, 0.225]  
+    target_transforms:
+      resize:
+        params:
+          size: [1024, 1024]
+
+  # Losses
+  losses:
+    ce:
+      weight: 0.5
+      params:  # ~ means None type, the initial params of loss could be identified here
+        ignore_index: 255
+      label_one_hot: False
+
+  # Optimizer
+  opt_params:
+    lr_default:  1e-3
+    wd_default: 1e-4
+    momentum: ~
+    lr_list:  [ 1e-2, ]
+    group_keys: [ [ 'mask_adapter.decoder_head.output_hypernetworks_mlps', ], ]
+    wd_list:  [ 0.0, ]
+  opt_name: 'adam' # 'sgd'
+  scheduler_name: 'multi_step'
+
+  # Runner
+  max_iter: 50000 # ~ 40e 
+  log_iter: 20
+  eval_iter: 2500 # ~ 2e
+  runner_name: 'sem_runner'
+  # Dataloader
+  bs: 4 # 8
+  num_workers: 2
+  drop_last: True
+  # Logger
+  use_tensorboard: True
+  tensorboard_folder: './experiment/tensorboard'
+  log_folder: './experiment/log'
+  model_folder: './experiment/model'
+
+val:
+  # Dataset
+  dataset:
+    name: 'base_sem'
+    params:
+      dataset_dir: 'data/foodseg103'
+      data_prefix: 
+        img_path: 'img_dir'
+        ann_path: 'ann_dir'
+      image_set: 'test'
+      metainfo:
+        class_names: ['candy', 'egg tart', 'french fries', 'chocolate', 'biscuit', 'popcorn', 'pudding', 'ice cream', 'cheese butter', 'cake', 'wine', 'milkshake', 'coffee', 'juice', 'milk', 'tea', 'almond', 'red beans', 'cashew', 'dried cranberries', 'soy', 'walnut', 'peanut', 'egg', 'apple', 'date', 'apricot', 'avocado', 'banana', 'strawberry', 'cherry', 'blueberry', 'raspberry', 'mango', 'olives', 'peach', 'lemon', 'pear', 'fig', 'pineapple', 'grape', 'kiwi', 'melon', 'orange', 'watermelon', 'steak', 'pork', 'chicken duck', 'sausage', 'fried meat', 'lamb', 'sauce', 'crab', 'fish', 'shellfish', 'shrimp', 'soup', 'bread', 'corn', 'hamburg', 'pizza', 'hanamaki baozi', 'wonton dumplings', 'pasta', 'noodles', 'rice', 'pie', 'tofu', 'eggplant', 'potato', 'garlic', 'cauliflower', 'tomato', 'kelp', 'seaweed', 'spring onion', 'rape', 'ginger', 'okra', 'lettuce', 'pumpkin', 'cucumber', 'white radish', 'carrot', 'asparagus', 'bamboo shoots', 'broccoli', 'celery stick', 'cilantro mint', 'snow peas', 'cabbage', 'bean sprouts', 'onion', 'pepper', 'green beans', 'French beans', 'king oyster mushroom', 'shiitake', 'enoki mushroom', 'oyster mushroom', 'white button mushroom', 'salad', 'other ingredient']
+    transforms:
+      resize:
+        params:
+          size: [1024, 1024]
+      to_tensor:
+        params: ~
+      normalize:
+        params:
+          mean: [0.485, 0.456, 0.406]
+          std: [0.229, 0.224, 0.225]
+    target_transforms:
+      resize:
+        params:
+          size: [1024, 1024]
+
+  bs: 4
+  num_workers: 4
+  drop_last: True
+
+
+test:
+  need_test: False
+

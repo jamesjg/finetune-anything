@@ -85,6 +85,7 @@ def get_scheduler(
         )
 
     elif lr_scheduler == "multi_step":
+        stepsize = [30, 40]
         if not isinstance(stepsize, list):
             raise TypeError(
                 "For multi_step lr_scheduler, stepsize must "
@@ -92,7 +93,7 @@ def get_scheduler(
             )
 
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=stepsize, gamma=gamma
+            optimizer, milestones=stepsize, gamma=gamma, verbose=True
         )
 
     elif lr_scheduler == "warmup_multi_step":

@@ -8,7 +8,7 @@ from datasets import get_dataset
 from losses import get_losses
 from extend_sam import get_model, get_optimizer, get_scheduler, get_opt_pamams, get_runner
 
-supported_tasks = ['detection', 'semantic_seg', 'instance_seg']
+supported_tasks = ['detection', 'semantic_seg', 'instance_seg', 'foodseg103']
 parser = argparse.ArgumentParser()
 parser.add_argument('--task_name', default='semantic_seg', type=str)
 parser.add_argument('--cfg', default=None, type=str)
