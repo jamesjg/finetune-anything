@@ -1,5 +1,5 @@
 train:
-  experiment_name: 'foodseg103_adam_lr_1e-3_vit_b_bs4*2_50000iter'
+  experiment_name: 'foodseg103_adam_lr_1e-3_wd_1e-4_vit_b_bs8_75000iter_train_decoder_adapter'
 
   # Model
   model:
@@ -9,7 +9,7 @@ train:
       fix_img_en: True
       fix_prompt_en: True
       fix_mask_de: False
-      ckpt_path: 'sam_ckpt/vit_b'
+      ckpt_path: 'sam_ckpt/vit_b.pth'
       class_num: 104 
       model_type: 'vit_b'    # type should be in [vit_h, vit_b, vit_l, default] vit-h:37s/iter, vit-b: 10s/iter 
 
@@ -52,19 +52,19 @@ train:
     lr_default:  1e-3
     wd_default: 1e-4
     momentum: ~
-    lr_list:  [ 1e-2, ]
-    group_keys: [ [ 'mask_adapter.decoder_head.output_hypernetworks_mlps', ], ]
-    wd_list:  [ 0.0, ]
+    lr_list:  [ 1e-3, ]
+    group_keys: [ [ 'mask_adapter', 'ori_sam.mask_decoder'], ]
+    wd_list:  [ 1e-4, ]
   opt_name: 'adam' # 'sgd'
   scheduler_name: 'multi_step'
 
   # Runner
-  max_iter: 50000 # ~ 40e 
+  max_iter: 75000  
   log_iter: 20
   eval_iter: 2500 # ~ 2e
   runner_name: 'sem_runner'
   # Dataloader
-  bs: 4 # 8
+  bs: 8 # 8
   num_workers: 2
   drop_last: True
   # Logger
@@ -100,7 +100,7 @@ val:
         params:
           size: [1024, 1024]
 
-  bs: 4
+  bs: 8
   num_workers: 4
   drop_last: True
 
